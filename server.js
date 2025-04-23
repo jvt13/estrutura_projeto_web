@@ -1,14 +1,21 @@
 const express = require('express');
 const http = require('http');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const ejs = require('ejs');
-const router = require('./src/routers/router');
+const router = require('./src/routers/routers');
 // const util = require('./src/utils/util'); // 🔹 Se "util" for um módulo seu, importe aqui!
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Carregando os certificados
+const options = {
+    key: fs.readFileSync(path.join(__dirname, 'cert/server.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'cert/server.cert'))
+  };
 
 // Middleware para tratar JSON e formulários grandes
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -23,10 +30,12 @@ app.use(session({
 }));
 
 // Configuração do EJS como template engine
-app.engine('html', ejs.renderFile);
-app.set('view engine', 'html');
+app.engine('ejs', ejs.renderFile);
+app.set('view engine', 'ejs');
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, '/src/views'));
+
+//app.use(express.static('public'));  // só para garantir que está em public
 
 // Definição das rotas
 app.use('/', router);
